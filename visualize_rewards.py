@@ -416,16 +416,6 @@ def plot_tsne(data, sample_size=100):
         s=100
     )
     
-    # 添加部分样本的idx标签
-    if len(sampled_data) <= 20:
-        # 如果样本较少，为所有点添加idx标签
-        for i, row in df_tsne[df_tsne['reward_type'] == 'Rule'].iterrows():
-            plt.text(row['x'], row['y'], str(row['idx']), fontsize=8)
-    else:
-        # 如果样本较多，只为部分点添加idx标签
-        for i, row in df_tsne[df_tsne['reward_type'] == 'Rule'].sample(20).iterrows():
-            plt.text(row['x'], row['y'], str(row['idx']), fontsize=8)
-    
     plt.title('三种Reward向量的t-SNE可视化 (向量已缩放至[-1,1]范围)')
     plt.xlabel('t-SNE维度1')
     plt.ylabel('t-SNE维度2')
