@@ -9,6 +9,7 @@ import matplotlib
 from scipy.spatial.distance import cosine
 from sklearn.metrics.pairwise import cosine_similarity
 import os
+from sklearn.manifold import TSNE
 
 # 设置中文字体支持
 matplotlib.rcParams['font.sans-serif'] = ['SimHei', 'Arial Unicode MS', 'Microsoft YaHei', 'Heiti TC', 'WenQuanYi Zen Hei']  # 中文字体
@@ -227,7 +228,7 @@ def plot_scatter_matrix(df):
     print(f"已保存散点图矩阵: {output_path}")
 
 def plot_rewards_by_idx(df, data, sample_size=100):
-    """方案4: 绘制按idx排序的reward余弦相似度趋势图"""
+    """方案4: 绘制按idx排序的reward余弦相似度趋势图（散点表示）"""
     # 确保输出目录存在
     output_dir = "reward_visualizations"
     os.makedirs(output_dir, exist_ok=True)
@@ -270,12 +271,24 @@ def plot_rewards_by_idx(df, data, sample_size=100):
         rule_self_sim.append(rule_self)
         rule_maj_sim.append(rule_maj)
     
-    # 绘制趋势图
-    plt.figure(figsize=(15, 6))
-    plt.plot(idx_list, rule_self_sim, 'r-', label='Rule-Self相似度')
-    plt.plot(idx_list, rule_maj_sim, 'g-', label='Rule-Majority相似度')
+    # 计算平均相似度
+    avg_rule_self = np.mean(rule_self_sim)
+    avg_rule_maj = np.mean(rule_maj_sim)
     
-    plt.title('Rule与其他两种Reward向量之间的余弦相似度趋势 (向量已缩放至[-1,1]范围)')
+    # 绘制散点图
+    plt.figure(figsize=(15, 6))
+    
+    # 使用散点图而非折线图
+    plt.scatter(idx_list, rule_self_sim, color='red', alpha=0.7, s=50, label='Rule-Self相似度')
+    plt.scatter(idx_list, rule_maj_sim, color='green', alpha=0.7, s=50, label='Rule-Majority相似度')
+    
+    # 添加平均值水平线
+    plt.axhline(y=avg_rule_self, color='red', linestyle='--', alpha=0.8, 
+               label=f'Rule-Self平均: {avg_rule_self:.4f}')
+    plt.axhline(y=avg_rule_maj, color='green', linestyle='--', alpha=0.8, 
+               label=f'Rule-Majority平均: {avg_rule_maj:.4f}')
+    
+    plt.title('Rule与其他两种Reward向量之间的余弦相似度分布 (向量已缩放至[-1,1]范围)')
     plt.xlabel('样本idx')
     plt.ylabel('余弦相似度')
     plt.legend()
@@ -284,7 +297,7 @@ def plot_rewards_by_idx(df, data, sample_size=100):
     output_path = os.path.join(output_dir, "方案4_rewards_similarity_by_idx.png")
     plt.savefig(output_path, dpi=300)
     plt.close()
-    print(f"已保存余弦相似度趋势图: {output_path}")
+    print(f"已保存余弦相似度散点图: {output_path}")
 
 def plot_heatmap_by_sample(data, sample_size=20):
     """方案5: 绘制样本的reward热图"""
@@ -329,6 +342,100 @@ def plot_heatmap_by_sample(data, sample_size=20):
     plt.close()
     print(f"已保存样本热图: {output_path}")
 
+def plot_tsne(data, sample_size=100):
+    """方案6: 使用t-SNE降维可视化reward向量分布"""
+    # 确保输出目录存在
+    output_dir = "reward_visualizations"
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # 如果数据太多，进行采样
+    if len(data) > sample_size:
+        indices = np.random.choice(len(data), sample_size, replace=False)
+        sampled_data = [data[i] for i in indices]
+    else:
+        sampled_data = data
+    
+    # 提取三种reward向量
+    rule_rewards = []
+    self_rewards = []
+    majority_rewards = []
+    idx_list = []
+    
+    # 将reward从0-1范围等比缩放到-1到1范围
+    def scale_to_neg1_pos1(reward_vector):
+        return [2 * r - 1 for r in reward_vector]  # r'= 2r - 1 将[0,1]映射到[-1,1]
+    
+    # 找到所有向量的最小长度
+    min_length = min(
+        min(len(entry['rule_rewards']) for entry in sampled_data),
+        min(len(entry['self_reward_rewards']) for entry in sampled_data),
+        min(len(entry['majority_rewards']) for entry in sampled_data)
+    )
+    
+    # 提取并处理向量
+    for entry in sampled_data:
+        rule_vec = scale_to_neg1_pos1(entry['rule_rewards'][:min_length])
+        self_vec = scale_to_neg1_pos1(entry['self_reward_rewards'][:min_length])
+        maj_vec = scale_to_neg1_pos1(entry['majority_rewards'][:min_length])
+        
+        rule_rewards.append(rule_vec)
+        self_rewards.append(self_vec)
+        majority_rewards.append(maj_vec)
+        idx_list.append(entry['idx'])
+    
+    # 合并所有向量用于t-SNE并转换为numpy数组
+    all_vectors = rule_rewards + self_rewards + majority_rewards
+    all_vectors = np.array(all_vectors)
+    
+    # 创建标签
+    labels = ['Rule'] * len(rule_rewards) + ['Self'] * len(self_rewards) + ['Majority'] * len(majority_rewards)
+    
+    # 执行t-SNE降维
+    tsne = TSNE(n_components=2, random_state=42, perplexity=min(30, len(all_vectors)-1))
+    reduced_data = tsne.fit_transform(all_vectors)
+    
+    # 创建DataFrame方便绘图
+    df_tsne = pd.DataFrame({
+        'x': reduced_data[:, 0],
+        'y': reduced_data[:, 1],
+        'reward_type': labels,
+        'idx': idx_list * 3  # 每个idx重复三次，对应三种reward
+    })
+    
+    # 绘制t-SNE图
+    plt.figure(figsize=(12, 10))
+    
+    # 使用不同颜色区分不同reward类型
+    palette = {'Rule': 'blue', 'Self': 'orange', 'Majority': 'green'}
+    sns.scatterplot(
+        data=df_tsne,
+        x='x', y='y',
+        hue='reward_type',
+        palette=palette,
+        alpha=0.7,
+        s=100
+    )
+    
+    # 添加部分样本的idx标签
+    if len(sampled_data) <= 20:
+        # 如果样本较少，为所有点添加idx标签
+        for i, row in df_tsne[df_tsne['reward_type'] == 'Rule'].iterrows():
+            plt.text(row['x'], row['y'], str(row['idx']), fontsize=8)
+    else:
+        # 如果样本较多，只为部分点添加idx标签
+        for i, row in df_tsne[df_tsne['reward_type'] == 'Rule'].sample(20).iterrows():
+            plt.text(row['x'], row['y'], str(row['idx']), fontsize=8)
+    
+    plt.title('三种Reward向量的t-SNE可视化 (向量已缩放至[-1,1]范围)')
+    plt.xlabel('t-SNE维度1')
+    plt.ylabel('t-SNE维度2')
+    plt.tight_layout()
+    
+    output_path = os.path.join(output_dir, "方案6_tsne_visualization.png")
+    plt.savefig(output_path, dpi=300)
+    plt.close()
+    print(f"已保存t-SNE可视化: {output_path}")
+
 def main():
     # 确保输出目录存在
     output_dir = "reward_visualizations"
@@ -357,6 +464,9 @@ def main():
     
     # 方案5: 绘制样本的reward热图
     plot_heatmap_by_sample(data)
+    
+    # 方案6: 使用t-SNE降维可视化reward向量分布
+    plot_tsne(data)
 
 if __name__ == "__main__":
     main()
