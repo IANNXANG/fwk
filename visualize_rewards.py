@@ -8,6 +8,7 @@ from matplotlib.colors import LinearSegmentedColormap
 import matplotlib
 from scipy.spatial.distance import cosine
 from sklearn.metrics.pairwise import cosine_similarity
+import os
 
 # 设置中文字体支持
 matplotlib.rcParams['font.sans-serif'] = ['SimHei', 'Arial Unicode MS', 'Microsoft YaHei', 'Heiti TC', 'WenQuanYi Zen Hei']  # 中文字体
@@ -59,6 +60,10 @@ def analyze_rewards(data):
 
 def plot_distribution(rule_rewards, self_rewards, majority_rewards):
     """方案1: 绘制三种reward的分布图"""
+    # 确保输出目录存在
+    output_dir = "reward_visualizations"
+    os.makedirs(output_dir, exist_ok=True)
+    
     plt.figure(figsize=(18, 6))
     
     # Rule Rewards分布
@@ -83,12 +88,17 @@ def plot_distribution(rule_rewards, self_rewards, majority_rewards):
     plt.ylabel('计数')
     
     plt.tight_layout()
-    plt.savefig('reward_distributions.png', dpi=300)
+    output_path = os.path.join(output_dir, "方案1_reward_distributions.png")
+    plt.savefig(output_path, dpi=300)
     plt.close()
-    print("已保存reward分布图: reward_distributions.png")
+    print(f"已保存reward分布图: {output_path}")
 
 def plot_correlation(data):
     """方案2: 绘制三种reward之间的相关性热图（使用向量相似度）"""
+    # 确保输出目录存在
+    output_dir = "reward_visualizations"
+    os.makedirs(output_dir, exist_ok=True)
+    
     # 将每个样本的rewards作为向量
     rule_rewards_vectors = []
     self_rewards_vectors = []
@@ -181,9 +191,10 @@ def plot_correlation(data):
     sns.heatmap(corr_df, annot=True, cmap=cmap, vmin=-1, vmax=1, center=0, fmt='.4f')
     plt.title('三种Reward向量的余弦相似度 (缩放至[-1,1]范围)')
     plt.tight_layout()
-    plt.savefig('reward_correlation.png', dpi=300)
+    output_path = os.path.join(output_dir, "方案2_reward_correlation.png")
+    plt.savefig(output_path, dpi=300)
     plt.close()
-    print("已保存相关性热图: reward_correlation.png")
+    print(f"已保存相关性热图: {output_path}")
     
     # 为与其他函数兼容，返回基于平均值的DataFrame
     df_data = []
@@ -202,39 +213,85 @@ def plot_correlation(data):
 
 def plot_scatter_matrix(df):
     """方案3: 绘制散点图矩阵"""
+    # 确保输出目录存在
+    output_dir = "reward_visualizations"
+    os.makedirs(output_dir, exist_ok=True)
+    
     plt.figure(figsize=(12, 10))
     scatter_cols = ['avg_rule_reward', 'avg_self_reward', 'avg_majority_reward']
     pd.plotting.scatter_matrix(df[scatter_cols], alpha=0.5, diagonal='kde')
     plt.tight_layout()
-    plt.savefig('reward_scatter_matrix.png', dpi=300)
+    output_path = os.path.join(output_dir, "方案3_reward_scatter_matrix.png")
+    plt.savefig(output_path, dpi=300)
     plt.close()
-    print("已保存散点图矩阵: reward_scatter_matrix.png")
+    print(f"已保存散点图矩阵: {output_path}")
 
-def plot_rewards_by_idx(df, sample_size=100):
-    """方案4: 绘制按idx排序的reward趋势图"""
+def plot_rewards_by_idx(df, data, sample_size=100):
+    """方案4: 绘制按idx排序的reward余弦相似度趋势图"""
+    # 确保输出目录存在
+    output_dir = "reward_visualizations"
+    os.makedirs(output_dir, exist_ok=True)
+    
     # 如果数据太多，进行采样
-    if len(df) > sample_size:
-        sampled_df = df.sample(sample_size, random_state=42).sort_values('idx')
+    if len(data) > sample_size:
+        indices = np.random.choice(len(data), sample_size, replace=False)
+        indices = sorted(indices)  # 排序以保持idx顺序
+        sampled_data = [data[i] for i in indices]
     else:
-        sampled_df = df.sort_values('idx')
+        sampled_data = data
+        
+    # 获取所有样本的idx
+    idx_list = [entry['idx'] for entry in sampled_data]
     
+    # 计算每个样本的reward向量之间的余弦相似度
+    rule_self_sim = []
+    rule_maj_sim = []
+    
+    # 将reward从0-1范围等比缩放到-1到1范围
+    def scale_to_neg1_pos1(reward_vector):
+        return [2 * r - 1 for r in reward_vector]  # r'= 2r - 1 将[0,1]映射到[-1,1]
+    
+    for entry in sampled_data:
+        # 获取三种reward向量
+        rule_vec = np.array(scale_to_neg1_pos1(entry['rule_rewards']))
+        self_vec = np.array(scale_to_neg1_pos1(entry['self_reward_rewards']))
+        maj_vec = np.array(scale_to_neg1_pos1(entry['majority_rewards']))
+        
+        # 确保向量长度一致（取最小长度）
+        min_len = min(len(rule_vec), len(self_vec), len(maj_vec))
+        rule_vec = rule_vec[:min_len]
+        self_vec = self_vec[:min_len]
+        maj_vec = maj_vec[:min_len]
+        
+        # 计算余弦相似度
+        rule_self = 1 - cosine(rule_vec, self_vec)
+        rule_maj = 1 - cosine(rule_vec, maj_vec)
+        
+        rule_self_sim.append(rule_self)
+        rule_maj_sim.append(rule_maj)
+    
+    # 绘制趋势图
     plt.figure(figsize=(15, 6))
-    plt.plot(sampled_df['idx'], sampled_df['avg_rule_reward'], 'r-', label='Rule Reward')
-    plt.plot(sampled_df['idx'], sampled_df['avg_self_reward'], 'g-', label='Self Reward')
-    plt.plot(sampled_df['idx'], sampled_df['avg_majority_reward'], 'b-', label='Majority Reward')
+    plt.plot(idx_list, rule_self_sim, 'r-', label='Rule-Self相似度')
+    plt.plot(idx_list, rule_maj_sim, 'g-', label='Rule-Majority相似度')
     
-    plt.title('三种Reward随idx变化趋势')
+    plt.title('Rule与其他两种Reward向量之间的余弦相似度趋势 (向量已缩放至[-1,1]范围)')
     plt.xlabel('样本idx')
-    plt.ylabel('平均Reward值')
+    plt.ylabel('余弦相似度')
     plt.legend()
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
-    plt.savefig('rewards_by_idx.png', dpi=300)
+    output_path = os.path.join(output_dir, "方案4_rewards_similarity_by_idx.png")
+    plt.savefig(output_path, dpi=300)
     plt.close()
-    print("已保存趋势图: rewards_by_idx.png")
+    print(f"已保存余弦相似度趋势图: {output_path}")
 
 def plot_heatmap_by_sample(data, sample_size=20):
     """方案5: 绘制样本的reward热图"""
+    # 确保输出目录存在
+    output_dir = "reward_visualizations"
+    os.makedirs(output_dir, exist_ok=True)
+    
     # 随机选择样本
     if len(data) > sample_size:
         indices = np.random.choice(len(data), sample_size, replace=False)
@@ -267,11 +324,17 @@ def plot_heatmap_by_sample(data, sample_size=20):
             axes[i, j].set_ylabel(f'idx={idx}')
     
     plt.tight_layout()
-    plt.savefig('reward_heatmaps.png', dpi=300)
+    output_path = os.path.join(output_dir, "方案5_reward_heatmaps.png")
+    plt.savefig(output_path, dpi=300)
     plt.close()
-    print("已保存样本热图: reward_heatmaps.png")
+    print(f"已保存样本热图: {output_path}")
 
 def main():
+    # 确保输出目录存在
+    output_dir = "reward_visualizations"
+    os.makedirs(output_dir, exist_ok=True)
+    print(f"图片将保存到目录: {output_dir}")
+    
     # 加载数据
     file_path = "processed_data_with_rewards_extracted.jsonl"
     data = load_data(file_path)
@@ -289,8 +352,8 @@ def main():
     # 方案3: 绘制散点图矩阵
     plot_scatter_matrix(df)
     
-    # 方案4: 绘制按idx排序的reward趋势图
-    plot_rewards_by_idx(df)
+    # 方案4: 绘制按idx排序的reward余弦相似度趋势图
+    plot_rewards_by_idx(df, data)
     
     # 方案5: 绘制样本的reward热图
     plot_heatmap_by_sample(data)
