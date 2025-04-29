@@ -6,6 +6,8 @@ from collections import Counter
 import pandas as pd
 from matplotlib.colors import LinearSegmentedColormap
 import matplotlib
+from scipy.spatial.distance import cosine
+from sklearn.metrics.pairwise import cosine_similarity
 
 # 设置中文字体支持
 matplotlib.rcParams['font.sans-serif'] = ['SimHei', 'Arial Unicode MS', 'Microsoft YaHei', 'Heiti TC', 'WenQuanYi Zen Hei']  # 中文字体
@@ -86,10 +88,105 @@ def plot_distribution(rule_rewards, self_rewards, majority_rewards):
     print("已保存reward分布图: reward_distributions.png")
 
 def plot_correlation(data):
-    """方案2: 绘制三种reward之间的相关性热图"""
-    # 为每个样本计算平均reward
-    df_data = []
+    """方案2: 绘制三种reward之间的相关性热图（使用向量相似度）"""
+    # 将每个样本的rewards作为向量
+    rule_rewards_vectors = []
+    self_rewards_vectors = []
+    majority_rewards_vectors = []
     
+    # 获取每个样本的reward向量
+    for entry in data:
+        rule_rewards_vectors.append(entry['rule_rewards'])
+        self_rewards_vectors.append(entry['self_reward_rewards'])
+        majority_rewards_vectors.append(entry['majority_rewards'])
+    
+    # 确保所有向量长度一致（如果有不一致的情况）
+    min_length = min(min(len(v) for v in rule_rewards_vectors), 
+                     min(len(v) for v in self_rewards_vectors),
+                     min(len(v) for v in majority_rewards_vectors))
+    
+    # 裁剪向量到最小长度
+    rule_rewards_vectors = [v[:min_length] for v in rule_rewards_vectors]
+    self_rewards_vectors = [v[:min_length] for v in self_rewards_vectors]
+    majority_rewards_vectors = [v[:min_length] for v in majority_rewards_vectors]
+    
+    # 将reward从0-1范围等比缩放到-1到1范围
+    def scale_to_neg1_pos1(reward_vector):
+        return [2 * r - 1 for r in reward_vector]  # r'= 2r - 1 将[0,1]映射到[-1,1]
+    
+    # 应用缩放转换
+    rule_rewards_vectors = [scale_to_neg1_pos1(v) for v in rule_rewards_vectors]
+    self_rewards_vectors = [scale_to_neg1_pos1(v) for v in self_rewards_vectors]
+    majority_rewards_vectors = [scale_to_neg1_pos1(v) for v in majority_rewards_vectors]
+    
+    # 计算向量之间的余弦相似度
+    # 首先计算每组向量与其他两组向量之间的平均余弦相似度
+    n_samples = len(rule_rewards_vectors)
+    
+    # 初始化相似度矩阵
+    similarity_matrix = np.zeros((3, 3))
+    
+    # 计算Rule与Self的相似度
+    rule_self_sim = 0
+    for i in range(n_samples):
+        rule_vec = np.array(rule_rewards_vectors[i])
+        self_vec = np.array(self_rewards_vectors[i])
+        # 1 - cosine距离 = 余弦相似度
+        sim = 1 - cosine(rule_vec, self_vec)
+        rule_self_sim += sim
+    rule_self_sim /= n_samples
+    
+    # 计算Rule与Majority的相似度
+    rule_maj_sim = 0
+    for i in range(n_samples):
+        rule_vec = np.array(rule_rewards_vectors[i])
+        maj_vec = np.array(majority_rewards_vectors[i])
+        sim = 1 - cosine(rule_vec, maj_vec)
+        rule_maj_sim += sim
+    rule_maj_sim /= n_samples
+    
+    # 计算Self与Majority的相似度
+    self_maj_sim = 0
+    for i in range(n_samples):
+        self_vec = np.array(self_rewards_vectors[i])
+        maj_vec = np.array(majority_rewards_vectors[i])
+        sim = 1 - cosine(self_vec, maj_vec)
+        self_maj_sim += sim
+    self_maj_sim /= n_samples
+    
+    # 填充相似度矩阵
+    similarity_matrix[0, 0] = 1.0  # Rule自身相似度
+    similarity_matrix[1, 1] = 1.0  # Self自身相似度
+    similarity_matrix[2, 2] = 1.0  # Majority自身相似度
+    
+    similarity_matrix[0, 1] = rule_self_sim
+    similarity_matrix[1, 0] = rule_self_sim
+    
+    similarity_matrix[0, 2] = rule_maj_sim
+    similarity_matrix[2, 0] = rule_maj_sim
+    
+    similarity_matrix[1, 2] = self_maj_sim
+    similarity_matrix[2, 1] = self_maj_sim
+    
+    # 创建DataFrame用于可视化
+    corr_df = pd.DataFrame(
+        similarity_matrix, 
+        index=['Rule Reward', 'Self Reward', 'Majority Reward'],
+        columns=['Rule Reward', 'Self Reward', 'Majority Reward']
+    )
+    
+    # 绘制热图
+    plt.figure(figsize=(10, 8))
+    cmap = LinearSegmentedColormap.from_list('rg', ["r", "w", "g"], N=256) 
+    sns.heatmap(corr_df, annot=True, cmap=cmap, vmin=-1, vmax=1, center=0, fmt='.4f')
+    plt.title('三种Reward向量的余弦相似度 (缩放至[-1,1]范围)')
+    plt.tight_layout()
+    plt.savefig('reward_correlation.png', dpi=300)
+    plt.close()
+    print("已保存相关性热图: reward_correlation.png")
+    
+    # 为与其他函数兼容，返回基于平均值的DataFrame
+    df_data = []
     for entry in data:
         avg_rule = np.mean(entry['rule_rewards'])
         avg_self = np.mean(entry['self_reward_rewards'])
@@ -101,22 +198,7 @@ def plot_correlation(data):
             'avg_majority_reward': avg_majority
         })
     
-    df = pd.DataFrame(df_data)
-    
-    # 计算相关性
-    corr = df[['avg_rule_reward', 'avg_self_reward', 'avg_majority_reward']].corr()
-    
-    # 绘制热图
-    plt.figure(figsize=(10, 8))
-    cmap = LinearSegmentedColormap.from_list('rg', ["r", "w", "g"], N=256) 
-    sns.heatmap(corr, annot=True, cmap=cmap, vmin=-1, vmax=1, center=0, fmt='.4f')
-    plt.title('三种Reward平均值的相关性')
-    plt.tight_layout()
-    plt.savefig('reward_correlation.png', dpi=300)
-    plt.close()
-    print("已保存相关性热图: reward_correlation.png")
-    
-    return df
+    return pd.DataFrame(df_data)
 
 def plot_scatter_matrix(df):
     """方案3: 绘制散点图矩阵"""
@@ -151,72 +233,8 @@ def plot_rewards_by_idx(df, sample_size=100):
     plt.close()
     print("已保存趋势图: rewards_by_idx.png")
 
-def plot_boxplot(data):
-    """方案5: 绘制三种reward的箱线图"""
-    # 准备数据
-    rule_box = []
-    self_box = []
-    majority_box = []
-    
-    for entry in data:
-        rule_avg = np.mean(entry['rule_rewards'])
-        self_avg = np.mean(entry['self_reward_rewards'])
-        maj_avg = np.mean(entry['majority_rewards'])
-        
-        rule_box.append(rule_avg)
-        self_box.append(self_avg)
-        majority_box.append(maj_avg)
-    
-    box_data = pd.DataFrame({
-        'Rule Reward': rule_box,
-        'Self Reward': self_box,
-        'Majority Reward': majority_box
-    })
-    
-    plt.figure(figsize=(10, 6))
-    sns.boxplot(data=box_data)
-    plt.title('三种Reward的箱线图比较')
-    plt.ylabel('平均Reward值')
-    plt.grid(True, alpha=0.3)
-    plt.tight_layout()
-    plt.savefig('rewards_boxplot.png', dpi=300)
-    plt.close()
-    print("已保存箱线图: rewards_boxplot.png")
-
-def plot_stacked_bars(data, sample_size=20):
-    """方案6: 为一部分样本绘制堆叠柱状图"""
-    # 随机选择样本
-    if len(data) > sample_size:
-        indices = np.random.choice(len(data), sample_size, replace=False)
-        sampled_data = [data[i] for i in indices]
-    else:
-        sampled_data = data
-        
-    idx_list = [entry['idx'] for entry in sampled_data]
-    rule_mean = [np.mean(entry['rule_rewards']) for entry in sampled_data]
-    self_mean = [np.mean(entry['self_reward_rewards']) for entry in sampled_data]
-    maj_mean = [np.mean(entry['majority_rewards']) for entry in sampled_data]
-    
-    plt.figure(figsize=(15, 6))
-    bar_width = 0.8
-    
-    plt.bar(idx_list, rule_mean, bar_width, label='Rule Reward', color='skyblue')
-    plt.bar(idx_list, self_mean, bar_width, bottom=rule_mean, label='Self Reward', color='orange')
-    plt.bar(idx_list, maj_mean, bar_width, bottom=[r+s for r,s in zip(rule_mean, self_mean)], 
-            label='Majority Reward', color='green')
-    
-    plt.title('样本的三种Reward堆叠柱状图')
-    plt.xlabel('样本idx')
-    plt.ylabel('平均Reward值')
-    plt.legend()
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    plt.savefig('stacked_bars.png', dpi=300)
-    plt.close()
-    print("已保存堆叠柱状图: stacked_bars.png")
-
 def plot_heatmap_by_sample(data, sample_size=20):
-    """方案7: 绘制样本的reward热图"""
+    """方案5: 绘制样本的reward热图"""
     # 随机选择样本
     if len(data) > sample_size:
         indices = np.random.choice(len(data), sample_size, replace=False)
@@ -274,13 +292,7 @@ def main():
     # 方案4: 绘制按idx排序的reward趋势图
     plot_rewards_by_idx(df)
     
-    # 方案5: 绘制三种reward的箱线图
-    plot_boxplot(data)
-    
-    # 方案6: 为一部分样本绘制堆叠柱状图
-    plot_stacked_bars(data)
-    
-    # 方案7: 绘制样本的reward热图
+    # 方案5: 绘制样本的reward热图
     plot_heatmap_by_sample(data)
 
 if __name__ == "__main__":
