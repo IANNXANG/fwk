@@ -28,15 +28,18 @@ output_dir = "problem_visualizations"
 os.makedirs(output_dir, exist_ok=True)
 
 def load_data_from_jsonl(file_path, sample_size=100):
-    """从JSONL文件加载数据并随机抽样"""
+    """从JSONL文件加载数据并随机抽样，sample_size=float('inf')时加载所有数据"""
     data = []
     with open(file_path, 'r', encoding='utf-8') as f:
         for line in f:
             data.append(json.loads(line))
     
-    # 确保样本大小不超过数据集大小
-    sample_size = min(sample_size, len(data))
-    sampled_data = random.sample(data, sample_size)
+    # 确保样本大小不超过数据集大小，sample_size为无穷大时加载所有数据
+    if sample_size == float('inf'):
+        sampled_data = data
+    else:
+        sample_size = min(sample_size, len(data))
+        sampled_data = random.sample(data, sample_size)
     
     # 提取问题文本，优先使用problem字段，如果不存在则使用instruction字段
     problems = []
@@ -220,14 +223,15 @@ def main():
         "problemdata/5.math3977gen.jsonl"
     ]
     
-    # 从每个文件加载数据
+    # 从每个文件加载所有数据
     all_problems = []
     labels = []
     
     for i, file_path in enumerate(jsonl_files):
         print(f"加载文件: {file_path}")
         try:
-            problems = load_data_from_jsonl(file_path)
+            # 不限制sample_size，加载所有数据
+            problems = load_data_from_jsonl(file_path, sample_size=float('inf'))
             all_problems.extend(problems)
             # 使用文件编号作为标签
             labels.extend([f"文件{i+1}" for _ in range(len(problems))])
