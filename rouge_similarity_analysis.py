@@ -90,16 +90,16 @@ def main():
     # 绘制分布图
     plt.figure(figsize=(12, 7))
     plt.hist(sim_array, bins=20, color='skyblue', edgecolor='black', alpha=0.7)
-    plt.xlabel('ROUGE-L 相似度', fontsize=14)
-    plt.ylabel('样本数量', fontsize=14)
-    plt.title('生成问题与种子问题的最大ROUGE-L相似度分布', fontsize=16)
+    plt.xlabel('ROUGE-L Similarity', fontsize=14)
+    plt.ylabel('Sample Count', fontsize=14)
+    plt.title('Distribution of Maximum ROUGE-L Similarity Between Generated and Seed Problems', fontsize=16)
     plt.grid(axis='y', alpha=0.75)
     
     # 添加平均值和中位数线
     mean_val = np.mean(sim_array)
     median_val = np.median(sim_array)
-    plt.axvline(mean_val, color='red', linestyle='dashed', linewidth=2, label=f'平均值: {mean_val:.4f}')
-    plt.axvline(median_val, color='green', linestyle='dashed', linewidth=2, label=f'中位数: {median_val:.4f}')
+    plt.axvline(mean_val, color='red', linestyle='dashed', linewidth=2, label=f'Mean: {mean_val:.4f}')
+    plt.axvline(median_val, color='green', linestyle='dashed', linewidth=2, label=f'Median: {median_val:.4f}')
     
     # 添加图例
     plt.legend(fontsize=12)
