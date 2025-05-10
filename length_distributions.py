@@ -67,6 +67,68 @@ def plot_distribution(result_data, dataset_name, output_dir='.', x_range=None):
     print(f"分布图已保存至 {output_file}")
     plt.close()
 
+def plot_difficulty_pie(result_data, dataset_name, output_dir='.'):
+    """根据响应长度绘制难度分布饼图"""
+    response_lengths = result_data['response_lengths']
+    
+    if not response_lengths:
+        print(f"警告：数据集 {dataset_name} 没有有效的响应长度数据，跳过绘图")
+        return
+    
+    # 按难度划分数据
+    easy = sum(1 for length in response_lengths if length < 150)
+    medium = sum(1 for length in response_lengths if 150 <= length <= 500)
+    hard = sum(1 for length in response_lengths if length > 500)
+    
+    # 计算百分比
+    total = len(response_lengths)
+    easy_pct = easy / total * 100
+    medium_pct = medium / total * 100
+    hard_pct = hard / total * 100
+    
+    # 设置饼图数据
+    labels = ['Easy (<150)', 'Medium (150-500)', 'Hard (>500)']
+    sizes = [easy, medium, hard]
+    colors = ['#66c2a5', '#fc8d62', '#8da0cb']  # 使用ColorBrewer配色
+    
+    # 创建饼图
+    plt.figure(figsize=(8, 8))
+    patches, texts, autotexts = plt.pie(
+        sizes, 
+        labels=labels, 
+        colors=colors,
+        autopct='%1.1f%%',
+        shadow=False, 
+        startangle=90,
+        wedgeprops={'edgecolor': 'w', 'linewidth': 1}
+    )
+    
+    # 设置字体大小
+    for text in texts:
+        text.set_fontsize(12)
+    for autotext in autotexts:
+        autotext.set_fontsize(12)
+        autotext.set_color('white')
+    
+    # 设置图表标题和属性
+    plt.title(f'Problem Difficulty Distribution - {dataset_name}', fontsize=16)
+    plt.axis('equal')  # 确保饼图是圆形的
+    
+    # 添加图例，显示绝对数量
+    legend_labels = [
+        f'Easy: {easy} ({easy_pct:.1f}%)',
+        f'Medium: {medium} ({medium_pct:.1f}%)', 
+        f'Hard: {hard} ({hard_pct:.1f}%)'
+    ]
+    plt.legend(patches, legend_labels, loc='lower center', bbox_to_anchor=(0.5, -0.15), ncol=3, fontsize=12)
+    
+    # 保存图片
+    output_file = os.path.join(output_dir, f'{dataset_name}_difficulty_pie.png')
+    plt.tight_layout()
+    plt.savefig(output_file, dpi=300, bbox_inches='tight')
+    print(f"难度分布饼图已保存至 {output_file}")
+    plt.close()
+
 def main():
     # 硬编码参数
     input_files = [
@@ -111,7 +173,12 @@ def main():
             if i < len(all_data):
                 result_data = all_data[i]
                 print(f"读取了 {len(result_data['results'])} 条数据，找到 {len(result_data['response_lengths'])} 个有效响应长度")
+                
+                # 绘制分布直方图
                 plot_distribution(result_data, dataset_name, output_dir, max_x)
+                
+                # 绘制难度分布饼图
+                plot_difficulty_pie(result_data, dataset_name, output_dir)
             else:
                 print(f"数据集 {dataset_name} 的数据未能加载")
         except Exception as e:
