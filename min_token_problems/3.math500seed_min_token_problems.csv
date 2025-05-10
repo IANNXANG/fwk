@@ -1,0 +1,11 @@
+id,field,token_count,text
+7324,instruction,7,Express eleven in base 2.
+2338,instruction,8,Compute $\cos 0^\circ$.
+5805,instruction,9,Factor $t^2-49$.
+5036,instruction,10,How many cubic feet are in three cubic yards?
+6330,instruction,10,Evaluate $81^{3/4}$.
+1925,instruction,10,Find $\cot (-60^\circ).$
+480,instruction,11,What is the greatest prime factor of 99?
+6736,instruction,12,Find the product of the divisors of $50$.
+308,instruction,12,What is the smallest three-digit multiple of 13?
+338,instruction,12,Compute $(-64)\div (-32)$.

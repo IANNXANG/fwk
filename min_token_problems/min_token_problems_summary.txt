@@ -1,0 +1,168 @@
+每个数据集中Token数最少的问题汇总
+============================================================
+
+
+数据集: 1.math7500
+--------------------------------------------------
+[1] ID: 6219, Token数: 7, 字段: problem
+问题内容: Evaluate $\log_82$.
+----------------------------------------
+[2] ID: 7324, Token数: 7, 字段: problem
+问题内容: Express eleven in base 2.
+----------------------------------------
+[3] ID: 1992, Token数: 8, 字段: problem
+问题内容: Compute $\tan 0^\circ$.
+----------------------------------------
+[4] ID: 1999, Token数: 8, 字段: problem
+问题内容: Compute $\sin 0^\circ$.
+----------------------------------------
+[5] ID: 2338, Token数: 8, 字段: problem
+问题内容: Compute $\cos 0^\circ$.
+----------------------------------------
+[6] ID: 2894, Token数: 8, 字段: problem
+问题内容: Compute $(1 + i)^4.$
+----------------------------------------
+[7] ID: 4400, Token数: 8, 字段: problem
+问题内容: How many three digit numbers are there?
+----------------------------------------
+[8] ID: 5087, Token数: 8, 字段: problem
+问题内容: Evaluate $\log_464$.
+----------------------------------------
+[9] ID: 5169, Token数: 8, 字段: problem
+问题内容: Evaluate $\log_432$.
+----------------------------------------
+[10] ID: 6469, Token数: 8, 字段: problem
+问题内容: Evaluate $\log_8 2$.
+----------------------------------------
+
+数据集: 3.math500seed
+--------------------------------------------------
+[1] ID: 7324, Token数: 7, 字段: instruction
+问题内容: Express eleven in base 2.
+----------------------------------------
+[2] ID: 2338, Token数: 8, 字段: instruction
+问题内容: Compute $\cos 0^\circ$.
+----------------------------------------
+[3] ID: 5805, Token数: 9, 字段: instruction
+问题内容: Factor $t^2-49$.
+----------------------------------------
+[4] ID: 5036, Token数: 10, 字段: instruction
+问题内容: How many cubic feet are in three cubic yards?
+----------------------------------------
+[5] ID: 6330, Token数: 10, 字段: instruction
+问题内容: Evaluate $81^{3/4}$.
+----------------------------------------
+[6] ID: 1925, Token数: 10, 字段: instruction
+问题内容: Find $\cot (-60^\circ).$
+----------------------------------------
+[7] ID: 480, Token数: 11, 字段: instruction
+问题内容: What is the greatest prime factor of 99?
+----------------------------------------
+[8] ID: 6736, Token数: 12, 字段: instruction
+问题内容: Find the product of the divisors of $50$.
+----------------------------------------
+[9] ID: 308, Token数: 12, 字段: instruction
+问题内容: What is the smallest three-digit multiple of 13?
+----------------------------------------
+[10] ID: 338, Token数: 12, 字段: instruction
+问题内容: Compute $(-64)\div (-32)$.
+----------------------------------------
+
+数据集: 6.iter0
+--------------------------------------------------
+[1] ID: 1684, Token数: 6, 字段: problem
+问题内容: Here is the new question:
+----------------------------------------
+[2] ID: 4412, Token数: 6, 字段: problem
+问题内容: Juan's old stamping grounds
+----------------------------------------
+[3] ID: 6155, Token数: 6, 字段: problem
+问题内容: Expand the following expression: $(
+----------------------------------------
+[4] ID: 5216, Token数: 7, 字段: problem
+问题内容: What value does ∇ equal?
+----------------------------------------
+[5] ID: 46, Token数: 8, 字段: problem
+问题内容: In the diagram below, , find .
+----------------------------------------
+[6] ID: 6448, Token数: 8, 字段: problem
+问题内容: What is the smallest positive perfect square that
+----------------------------------------
+[7] ID: 5215, Token数: 9, 字段: problem
+问题内容: What is the product of the given matrices?
+----------------------------------------
+[8] ID: 5673, Token数: 9, 字段: problem
+问题内容: What is their average daily profit per loaf?
+----------------------------------------
+[9] ID: 6631, Token数: 9, 字段: problem
+问题内容: Describe the set t and find its area.
+----------------------------------------
+[10] ID: 7119, Token数: 9, 字段: problem
+问题内容: Find the product of the given matrix sequence.
+----------------------------------------
+
+数据集: 7.iter1
+--------------------------------------------------
+[1] ID: 1559, Token数: 6, 字段: problem
+问题内容: Juan's old stamping grounds
+----------------------------------------
+[2] ID: 4122, Token数: 6, 字段: problem
+问题内容: Here are the word problems:
+----------------------------------------
+[3] ID: 4989, Token数: 6, 字段: problem
+问题内容: Juan's old stamping grounds
+----------------------------------------
+[4] ID: 6307, Token数: 6, 字段: problem
+问题内容: Find the value of k.
+----------------------------------------
+[5] ID: 115, Token数: 8, 字段: problem
+问题内容: Find the product of the given matrices.
+----------------------------------------
+[6] ID: 1012, Token数: 8, 字段: problem
+问题内容: Find all real values of x that satisfy
+----------------------------------------
+[7] ID: 6635, Token数: 8, 字段: problem
+问题内容: Find the product of the given matrices.
+----------------------------------------
+[8] ID: 4990, Token数: 9, 字段: problem
+问题内容: Find the number of real solutions to the equation
+----------------------------------------
+[9] ID: 7068, Token数: 9, 字段: problem
+问题内容: All the plotted points lie on an ellipse.
+----------------------------------------
+[10] ID: 124, Token数: 10, 字段: problem
+问题内容: List the prime numbers less than 10.
+----------------------------------------
+
+数据集: 8.iter2
+--------------------------------------------------
+[1] ID: 4541, Token数: 5, 字段: problem
+问题内容: Triangle abc and line de
+----------------------------------------
+[2] ID: 4542, Token数: 5, 字段: problem
+问题内容: Tom and alex's investment
+----------------------------------------
+[3] ID: 4543, Token数: 5, 字段: problem
+问题内容: Minimum number of buses needed
+----------------------------------------
+[4] ID: 5319, Token数: 5, 字段: problem
+问题内容: Multiply the given matrices.
+----------------------------------------
+[5] ID: 1675, Token数: 6, 字段: problem
+问题内容: Juan's old stamping grounds
+----------------------------------------
+[6] ID: 7512, Token数: 7, 字段: problem
+问题内容: Mrs. thompson's room numbers
+----------------------------------------
+[7] ID: 1196, Token数: 8, 字段: problem
+问题内容: Is it a right-angled triangle?
+----------------------------------------
+[8] ID: 2091, Token数: 8, 字段: problem
+问题内容: Jimmy's orange problem remains the same.
+----------------------------------------
+[9] ID: 2396, Token数: 8, 字段: problem
+问题内容: The function f is graphed below.
+----------------------------------------
+[10] ID: 3054, Token数: 8, 字段: problem
+问题内容: Find the product of the given matrices.
+----------------------------------------

@@ -35,7 +35,7 @@ def count_tokens(text, tokenizer):
     """使用Qwen分词器计算文本的token数量"""
     return len(tokenizer.encode(text))
 
-def process_dataset(file_path, output_dir, sample_size=500, x_max=None, bin_size=20):
+def process_dataset(file_path, output_dir, sample_size=None, x_max=None, bin_size=20):
     """处理单个数据集，计算问题文本的token长度"""
     # 提取数据集名称
     dataset_name = os.path.splitext(os.path.basename(file_path))[0]
@@ -46,13 +46,13 @@ def process_dataset(file_path, output_dir, sample_size=500, x_max=None, bin_size
         data = load_jsonl(file_path)
         print(f"成功加载 {len(data)} 条数据")
         
-        # 采样
-        if len(data) > sample_size:
+        # 采样逻辑 - 如果指定了sample_size才采样，否则处理全部数据
+        if sample_size and len(data) > sample_size:
             sampled_data = random.sample(data, sample_size)
             print(f"随机采样 {sample_size} 条数据")
         else:
             sampled_data = data
-            print(f"数据集条目少于 {sample_size}，使用全部 {len(data)} 条数据")
+            print(f"处理全部 {len(data)} 条数据")
         
         # 初始化Qwen分词器
         print("使用Qwen3分词器")
@@ -111,7 +111,7 @@ def process_dataset(file_path, output_dir, sample_size=500, x_max=None, bin_size
         plt.hist(token_counts, bins=bins, color='skyblue', edgecolor='black', alpha=0.7)
         plt.xlabel('Token Count', fontsize=12)
         plt.ylabel('Frequency', fontsize=12)
-        plt.title(f'Qwen3 Token Count Distribution - {dataset_name}', fontsize=14)
+        plt.title(f'Qwen3 Token Count Distribution - {dataset_name} (全量数据)', fontsize=14)
         plt.grid(True, alpha=0.3)
         
         # 保存图片
@@ -131,7 +131,7 @@ def save_summary(results, output_dir):
     output_file = os.path.join(output_dir, "qwen3_token_count_summary.txt")
     
     with open(output_file, 'w', encoding='utf-8') as f:
-        f.write("数据集问题Qwen3 Token长度统计\n")
+        f.write("数据集问题Qwen3 Token长度统计 (全量数据)\n")
         f.write("=" * 40 + "\n\n")
         
         for dataset_name, stats in results.items():
@@ -150,8 +150,8 @@ def save_summary(results, output_dir):
 def main():
     # 解析命令行参数
     parser = argparse.ArgumentParser(description='使用Qwen3分词器统计数据集中问题文本的token长度')
-    parser.add_argument('--sample_size', type=int, default=500, help='每个数据集的采样数量')
-    parser.add_argument('--output_dir', type=str, default="qwen3_token_analysis", help='输出目录')
+    parser.add_argument('--sample_size', type=int, default=None, help='每个数据集的采样数量，不指定则处理全部数据')
+    parser.add_argument('--output_dir', type=str, default="qwen3_token_analysis_full", help='输出目录')
     parser.add_argument('--bin_size', type=int, default=20, help='直方图每个bin的大小')
     args = parser.parse_args()
     
@@ -168,6 +168,7 @@ def main():
     os.makedirs(args.output_dir, exist_ok=True)
     print(f"输出结果将保存在: {args.output_dir}")
     print("使用Qwen3分词器进行token计数")
+    print("处理全部数据，不进行采样")
     
     # 处理所有数据集
     results = {}
