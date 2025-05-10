@@ -20,12 +20,20 @@
 ├── qwen3_token_analysis/           # 采样token分析结果目录
 ├── min_token_problems/             # 最小token问题分析结果
 ├── visualizations/                 # 可视化结果目录
+├── evaluation_results/             # 评估结果目录
+├── problem_visualizations/         # 问题可视化结果目录
 ├── requirements.txt                # 项目依赖
 ├── qwen3_responses_length.py       # 主要数据处理脚本
 ├── length_distributions.py         # 长度分布可视化脚本
 ├── token_analyzer.py               # Token数据分析命令行工具
 ├── find_min_token_problems.py      # 查找最小token问题脚本
-└── token_counter.py                # Token计数工具
+├── token_counter.py                # Token计数工具
+├── math_problem_evaluator.py       # 数学问题质量评估脚本
+├── rouge_similarity_analysis.py    # ROUGE相似度分析脚本
+├── analyze_similarity.py           # 相似度分析工具
+├── compute_reward_hit_rate.py      # 奖励命中率计算脚本
+├── jsonl_umap_analyzer.py          # UMAP降维可视化分析
+└── jsonl_tsne_analyzer.py          # t-SNE降维可视化分析
 ```
 
 ## 主要脚本功能
@@ -91,6 +99,51 @@ python token_analyzer.py
 python find_min_token_problems.py --top_n 10 --output_dir "min_token_problems"
 ```
 
+### math_problem_evaluator.py
+
+用于评估数学问题质量的脚本，通过多维度评分提供全面分析。
+
+主要功能：
+- 从JSONL文件加载数学问题数据
+- 使用预定义的评估维度（任务有效性、问题适当性、解决方案正确性、整体质量）
+- 调用语言模型对每个数学问题在各个维度进行评分
+- 多线程并行处理，提高评估效率
+- 生成详细的评估报告和统计数据
+
+使用方法：
+```bash
+python math_problem_evaluator.py --model "8001vllm" --batch_size 64
+```
+
+### rouge_similarity_analysis.py
+
+用于分析数学问题之间相似度的脚本，使用ROUGE指标。
+
+主要功能：
+- 计算数据集中问题之间的ROUGE相似度
+- 生成相似度分布直方图
+- 识别高相似度问题对
+
+使用方法：
+```bash
+python rouge_similarity_analysis.py
+```
+
+### jsonl_umap_analyzer.py / jsonl_tsne_analyzer.py
+
+用于对数学问题进行降维可视化分析的脚本。
+
+主要功能：
+- 使用UMAP或t-SNE技术对高维数据进行降维
+- 可视化数学问题的分布和聚类情况
+- 探索数据集中隐藏的模式和结构
+
+使用方法：
+```bash
+python jsonl_umap_analyzer.py --input_file "problemdata/1.math7500.jsonl"
+python jsonl_tsne_analyzer.py --input_file "problemdata/1.math7500.jsonl"
+```
+
 ## 数据处理流程
 
 1. 数据加载：从JSONL文件加载数学问题数据
@@ -99,6 +152,9 @@ python find_min_token_problems.py --top_n 10 --output_dir "min_token_problems"
 4. 数据存储：将处理结果保存为JSONL格式文件
 5. 数据分析：计算统计信息，如平均长度、中位数等
 6. 数据可视化：绘制分布直方图和饼图，展示不同难度问题的分布
+7. 质量评估：评估数学问题的质量和适当性
+8. 相似度分析：分析问题之间的相似度，识别重复或相似问题
+9. 降维可视化：对高维数据进行降维，探索数据结构
 
 ## 环境要求
 
@@ -111,6 +167,10 @@ python find_min_token_problems.py --top_n 10 --output_dir "min_token_problems"
 - openai
 - pandas
 - tabulate
+- scikit-learn
+- rouge-score
+- umap-learn
+- seaborn
 
 可通过以下命令安装依赖：
 ```bash
@@ -124,6 +184,9 @@ pip install -r requirements.txt
 3. 运行数据处理脚本：`python qwen3_responses_length.py`
 4. 运行可视化分析脚本：`python length_distributions.py`
 5. 使用token分析工具：`python token_analyzer.py`
+6. 进行问题质量评估：`python math_problem_evaluator.py`
+7. 分析问题相似度：`python rouge_similarity_analysis.py`
+8. 进行降维可视化：`python jsonl_umap_analyzer.py`
 
 ## 研究结果
 
@@ -131,4 +194,7 @@ pip install -r requirements.txt
 - 了解Qwen3模型在处理不同类型数学问题时的token长度分布
 - 分析不同难度数学问题的比例分布
 - 识别模型处理效率高的简单问题和处理复杂的困难问题
+- 评估数学问题的质量和适当性
+- 分析问题集中的重复和相似内容
+- 发现数据集中的隐藏模式和结构
 - 为优化大语言模型处理数学问题的能力提供数据支持 
