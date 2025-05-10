@@ -128,8 +128,7 @@ def process_dataset(data, client, model_name, output_prefix, batch_size=256, max
     print(f"数据集样本数量: {len(data)}")
     print(f"使用批处理大小: {batch_size}")
     
-    # 创建输出文件并初始化
-    output_file = f'{output_prefix}_responses.json'
+    # 只保留JSONL输出文件
     processed_file = f'{output_prefix}_with_responses.jsonl'
     
     # 初始化输出文件
@@ -223,39 +222,52 @@ def process_dataset(data, client, model_name, output_prefix, batch_size=256, max
         # 等待一段合理的时间让线程自行终止
         time.sleep(2)
         
-        # 过滤掉None值
-        results = [r for r in results if r is not None]
-        
-        # 保存最终结果到JSON文件
-        with open(output_file, 'w', encoding='utf-8') as f:
-            json.dump({
-                'results': results,
-                'response_lengths': response_lengths,
-                'stats': {
-                    'mean': float(np.mean(response_lengths)) if response_lengths else 0,
-                    'median': float(np.median(response_lengths)) if response_lengths else 0,
-                    'min': float(np.min(response_lengths)) if response_lengths else 0,
-                    'max': float(np.max(response_lengths)) if response_lengths else 0
-                }
-            }, f, indent=2, ensure_ascii=False)
-        print(f"\n结果已保存至 {output_file}")
-        print(f"完成处理: {completed}/{len(data)} 条数据")
-    
-    return {
-        'results': results,
-        'response_lengths': response_lengths,
-        'stats': {
+        # 计算统计信息
+        stats = {
             'mean': float(np.mean(response_lengths)) if response_lengths else 0,
             'median': float(np.median(response_lengths)) if response_lengths else 0,
             'min': float(np.min(response_lengths)) if response_lengths else 0,
             'max': float(np.max(response_lengths)) if response_lengths else 0
         }
+        
+        print(f"\n完成处理: {completed}/{len(data)} 条数据")
+        print(f"数据已保存至: {processed_file}")
+        print(f"统计信息:\n  平均长度: {stats['mean']:.2f}\n  中位数长度: {stats['median']:.2f}\n  最短: {stats['min']}\n  最长: {stats['max']}")
+    
+    return {
+        'file_path': processed_file,
+        'response_lengths': response_lengths,
+        'stats': stats 
     }
 
+def load_response_lengths_from_jsonl(file_path):
+    """从JSONL文件加载响应长度数据"""
+    response_lengths = []
+    
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                item = json.loads(line)
+                if 'qwen_token_count' in item and item['qwen_token_count'] is not None:
+                    response_lengths.append(item['qwen_token_count'])
+    except Exception as e:
+        print(f"读取文件 {file_path} 时出错: {e}")
+    
+    return response_lengths
+
 def plot_distribution(datasets_results, dataset_names):
-    """根据保存的中间结果绘制分布图"""
+    """根据处理结果绘制分布图"""
     for i, (result_data, dataset_name) in enumerate(zip(datasets_results, dataset_names)):
-        response_lengths = result_data['response_lengths']
+        # 如果result_data中不包含response_lengths，则从文件中加载
+        if 'response_lengths' not in result_data or not result_data['response_lengths']:
+            file_path = result_data.get('file_path')
+            if file_path and os.path.exists(file_path):
+                response_lengths = load_response_lengths_from_jsonl(file_path)
+            else:
+                print(f"警告：无法找到数据集 {dataset_name} 的响应长度数据")
+                continue
+        else:
+            response_lengths = result_data['response_lengths']
         
         if not response_lengths:
             print(f"警告：数据集 {dataset_name} 没有有效的响应长度数据，跳过绘图")
@@ -274,8 +286,9 @@ def plot_distribution(datasets_results, dataset_names):
         plt.grid(axis='y', alpha=0.75)
         
         # 添加平均值和中位数线
-        mean_val = result_data['stats']['mean']
-        median_val = result_data['stats']['median']
+        stats = result_data.get('stats', {})
+        mean_val = stats.get('mean', np.mean(response_lengths))
+        median_val = stats.get('median', np.median(response_lengths))
         plt.axvline(mean_val, color='red', linestyle='dashed', linewidth=2, label=f'Mean: {mean_val:.2f}')
         plt.axvline(median_val, color='green', linestyle='dashed', linewidth=2, label=f'Median: {median_val:.2f}')
         
@@ -315,12 +328,8 @@ def main(args):
     results = []
     dataset_names = []
     
-    # 跳过第一个数据集，只处理第二个
-    for i, dataset in enumerate(datasets):
-        if i == 0 and not args.process_first:
-            print(f"\n跳过数据集: {dataset['file']}")
-            continue
-            
+    # 处理所有数据集
+    for dataset in datasets:
         print(f"\n加载数据集: {dataset['file']}")
         data = load_jsonl(dataset['file'])
         
@@ -347,7 +356,6 @@ if __name__ == "__main__":
     parser.add_argument('--port', type=int, default=8001, help='vLLM服务端口')
     parser.add_argument('--model', type=str, default="8001vllm", help='模型名称')
     parser.add_argument('--batch_size', type=int, default=256, help='批处理大小')
-    parser.add_argument('--process_first', action='store_true', help='是否处理第一个数据集，默认跳过')
     
     args = parser.parse_args()
     main(args) 

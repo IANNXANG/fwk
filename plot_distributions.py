@@ -5,12 +5,32 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-import argparse
 
-def load_results(file_path):
-    """加载处理结果文件"""
+def load_results_from_jsonl(file_path):
+    """从JSONL文件加载处理结果"""
+    data = []
+    response_lengths = []
+    
     with open(file_path, 'r', encoding='utf-8') as f:
-        return json.load(f)
+        for line in f:
+            item = json.loads(line)
+            if 'qwen_token_count' in item and item['qwen_token_count'] is not None:
+                response_lengths.append(item['qwen_token_count'])
+                data.append(item)
+    
+    # 计算统计信息
+    stats = {
+        'mean': float(np.mean(response_lengths)) if response_lengths else 0,
+        'median': float(np.median(response_lengths)) if response_lengths else 0,
+        'min': float(np.min(response_lengths)) if response_lengths else 0,
+        'max': float(np.max(response_lengths)) if response_lengths else 0
+    }
+    
+    return {
+        'results': data,
+        'response_lengths': response_lengths,
+        'stats': stats
+    }
 
 def plot_distribution(result_data, dataset_name, output_dir='.'):
     """绘制响应长度分布图，不包含平均值和中位数线"""
@@ -39,35 +59,33 @@ def plot_distribution(result_data, dataset_name, output_dir='.'):
     print(f"分布图已保存至 {output_file}")
     plt.close()
 
-def main(args):
+def main():
+    # 硬编码参数
+    input_files = [
+        "math7507gen_with_responses.jsonl",
+        "math3977gen_with_responses.jsonl"
+    ]
+    dataset_names = [
+        "Math 7507",
+        "Math 3977"
+    ]
+    output_dir = "visualizations"
+    
     # 确保输出目录存在
-    os.makedirs(args.output_dir, exist_ok=True)
+    os.makedirs(output_dir, exist_ok=True)
     
     # 处理每个数据集并绘图
-    for input_file, dataset_name in zip(args.input_files, args.dataset_names):
+    for input_file, dataset_name in zip(input_files, dataset_names):
         print(f"\n处理数据集可视化: {dataset_name}")
         try:
-            result_data = load_results(input_file)
-            plot_distribution(result_data, dataset_name, args.output_dir)
+            if os.path.exists(input_file):
+                result_data = load_results_from_jsonl(input_file)
+                print(f"读取了 {len(result_data['results'])} 条数据，找到 {len(result_data['response_lengths'])} 个有效响应长度")
+                plot_distribution(result_data, dataset_name, output_dir)
+            else:
+                print(f"文件不存在: {input_file}")
         except Exception as e:
             print(f"处理数据集 {dataset_name} 时出错: {e}")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='绘制响应长度分布图')
-    parser.add_argument('--input_files', type=str, nargs='+', help='响应结果JSON文件路径列表')
-    parser.add_argument('--dataset_names', type=str, nargs='+', help='数据集名称列表，与输入文件一一对应')
-    parser.add_argument('--output_dir', type=str, default='.', help='输出目录')
-    
-    args = parser.parse_args()
-    
-    # 检查参数
-    if args.input_files is None or args.dataset_names is None:
-        print("请提供输入文件和数据集名称")
-        parser.print_help()
-        exit(1)
-    
-    if len(args.input_files) != len(args.dataset_names):
-        print("输入文件数量必须与数据集名称数量相同")
-        exit(1)
-    
-    main(args) 
+    main() 
