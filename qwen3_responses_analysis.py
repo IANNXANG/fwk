@@ -87,16 +87,16 @@ def process_single_item(client, model_name, question, max_retries=3, retry_delay
                     "error": str(e)
                 }
 
-def continuous_worker(task_queue, result_queue, client, model_name, max_retries=3, retry_delay=5):
+def continuous_worker(task_queue, result_queue, client, model_name, stop_event, max_retries=3, retry_delay=5):
     """持续从任务队列获取任务并处理"""
-    while True:
+    while not stop_event.is_set():
         try:
             # 从队列获取任务，如果队列为空，等待1秒后重试
             try:
                 item_idx, question = task_queue.get(timeout=1)
             except queue.Empty:
-                # 检查是否应该退出
-                if threading.current_thread().daemon:
+                # 如果队列为空且stop_event被设置，则退出
+                if stop_event.is_set():
                     break
                 continue
             
@@ -140,6 +140,9 @@ def process_dataset(data, client, model_name, output_prefix, batch_size=256, max
     task_queue = queue.Queue()
     result_queue = queue.Queue()
     
+    # 创建停止事件
+    stop_event = threading.Event()
+    
     # 准备所有任务
     for i, item in enumerate(data):
         # 从数据中提取问题
@@ -160,8 +163,8 @@ def process_dataset(data, client, model_name, output_prefix, batch_size=256, max
     for _ in range(num_workers):
         thread = threading.Thread(
             target=continuous_worker,
-            args=(task_queue, result_queue, client, model_name, max_retries, retry_delay),
-            daemon=True
+            args=(task_queue, result_queue, client, model_name, stop_event, max_retries, retry_delay),
+            daemon=True  # 设为daemon线程，主线程结束时会自动终止
         )
         thread.start()
         threads.append(thread)
@@ -214,9 +217,11 @@ def process_dataset(data, client, model_name, output_prefix, batch_size=256, max
         # 关闭进度条
         pbar.close()
         
-        # 等待所有工作线程完成
-        for thread in threads:
-            thread.daemon = False  # 允许线程正常退出
+        # 设置停止事件，通知所有线程停止
+        stop_event.set()
+        
+        # 等待一段合理的时间让线程自行终止
+        time.sleep(2)
         
         # 过滤掉None值
         results = [r for r in results if r is not None]
@@ -310,7 +315,12 @@ def main(args):
     results = []
     dataset_names = []
     
-    for dataset in datasets:
+    # 跳过第一个数据集，只处理第二个
+    for i, dataset in enumerate(datasets):
+        if i == 0 and not args.process_first:
+            print(f"\n跳过数据集: {dataset['file']}")
+            continue
+            
         print(f"\n加载数据集: {dataset['file']}")
         data = load_jsonl(dataset['file'])
         
@@ -326,8 +336,9 @@ def main(args):
         dataset_names.append(dataset['name'])
     
     # 根据中间结果绘图
-    print("\n根据保存的结果绘制图表...")
-    plot_distribution(results, dataset_names)
+    if results:
+        print("\n根据保存的结果绘制图表...")
+        plot_distribution(results, dataset_names)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='使用Qwen3模型处理数据并分析响应长度')
@@ -336,6 +347,7 @@ if __name__ == "__main__":
     parser.add_argument('--port', type=int, default=8001, help='vLLM服务端口')
     parser.add_argument('--model', type=str, default="8001vllm", help='模型名称')
     parser.add_argument('--batch_size', type=int, default=256, help='批处理大小')
+    parser.add_argument('--process_first', action='store_true', help='是否处理第一个数据集，默认跳过')
     
     args = parser.parse_args()
     main(args) 
