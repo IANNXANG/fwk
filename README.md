@@ -33,7 +33,9 @@
 ├── analyze_similarity.py           # 相似度分析工具
 ├── compute_reward_hit_rate.py      # 奖励命中率计算脚本
 ├── jsonl_umap_analyzer.py          # UMAP降维可视化分析
-└── jsonl_tsne_analyzer.py          # t-SNE降维可视化分析
+├── jsonl_tsne_analyzer.py          # t-SNE降维可视化分析
+├── noun_verb.py                    # 问题指令中动词-名词结构分析工具
+└── jsonl_umap_analyzer.py          # UMAP降维可视化分析
 ```
 
 ## 主要脚本功能

@@ -46,7 +46,7 @@ def plot_distribution(result_data, dataset_name, output_dir='.', x_range=None):
     if x_range:
         bins = range(0, x_range + 50, 50)
     else:
-        bins = range(0, max(response_lengths) + 50, 50)
+    bins = range(0, max(response_lengths) + 50, 50)
     
     plt.hist(response_lengths, bins=bins, color='skyblue', edgecolor='black', alpha=0.7)
     

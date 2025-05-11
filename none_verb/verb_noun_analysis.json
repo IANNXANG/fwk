@@ -1,0 +1,471 @@
+{
+  "top_verbs": [
+    {
+      "verb": "have",
+      "count": 1106
+    },
+    {
+      "verb": "sell",
+      "count": 1033
+    },
+    {
+      "verb": "save",
+      "count": 356
+    },
+    {
+      "verb": "hold",
+      "count": 199
+    },
+    {
+      "verb": "plan",
+      "count": 197
+    },
+    {
+      "verb": "find",
+      "count": 175
+    },
+    {
+      "verb": "produce",
+      "count": 94
+    },
+    {
+      "verb": "make",
+      "count": 56
+    },
+    {
+      "verb": "contain",
+      "count": 49
+    },
+    {
+      "verb": "take",
+      "count": 45
+    },
+    {
+      "verb": "offer",
+      "count": 33
+    },
+    {
+      "verb": "represent",
+      "count": 32
+    },
+    {
+      "verb": "charge",
+      "count": 29
+    },
+    {
+      "verb": "surround",
+      "count": 29
+    },
+    {
+      "verb": "fill",
+      "count": 28
+    },
+    {
+      "verb": "score",
+      "count": 26
+    },
+    {
+      "verb": "buy",
+      "count": 23
+    },
+    {
+      "verb": "cost",
+      "count": 22
+    },
+    {
+      "verb": "give",
+      "count": 21
+    },
+    {
+      "verb": "paint",
+      "count": 21
+    }
+  ],
+  "top_pairs": [
+    {
+      "verb": "buy",
+      "noun": "box",
+      "count": 5
+    },
+    {
+      "verb": "buy",
+      "noun": "shirt",
+      "count": 2
+    },
+    {
+      "verb": "buy",
+      "noun": "set",
+      "count": 2
+    },
+    {
+      "verb": "buy",
+      "noun": "dog",
+      "count": 1
+    },
+    {
+      "verb": "charge",
+      "noun": "fee",
+      "count": 14
+    },
+    {
+      "verb": "charge",
+      "noun": "rate",
+      "count": 8
+    },
+    {
+      "verb": "charge",
+      "noun": "fare",
+      "count": 2
+    },
+    {
+      "verb": "charge",
+      "noun": "price",
+      "count": 1
+    },
+    {
+      "verb": "contain",
+      "noun": "marble",
+      "count": 7
+    },
+    {
+      "verb": "contain",
+      "noun": "total",
+      "count": 5
+    },
+    {
+      "verb": "contain",
+      "noun": "pencil",
+      "count": 4
+    },
+    {
+      "verb": "contain",
+      "noun": "gallon",
+      "count": 2
+    },
+    {
+      "verb": "cost",
+      "noun": "dollar",
+      "count": 4
+    },
+    {
+      "verb": "cost",
+      "noun": "\\$6$.",
+      "count": 3
+    },
+    {
+      "verb": "cost",
+      "noun": "apple",
+      "count": 2
+    },
+    {
+      "verb": "cost",
+      "noun": "price",
+      "count": 2
+    },
+    {
+      "verb": "fill",
+      "noun": "tank",
+      "count": 15
+    },
+    {
+      "verb": "fill",
+      "noun": "pool",
+      "count": 6
+    },
+    {
+      "verb": "fill",
+      "noun": "bottle",
+      "count": 2
+    },
+    {
+      "verb": "fill",
+      "noun": "vat",
+      "count": 1
+    },
+    {
+      "verb": "find",
+      "noun": "value",
+      "count": 59
+    },
+    {
+      "verb": "find",
+      "noun": "length",
+      "count": 16
+    },
+    {
+      "verb": "find",
+      "noun": "volume",
+      "count": 15
+    },
+    {
+      "verb": "find",
+      "noun": "area",
+      "count": 15
+    },
+    {
+      "verb": "give",
+      "noun": "-0.05x",
+      "count": 2
+    },
+    {
+      "verb": "give",
+      "noun": "box",
+      "count": 2
+    },
+    {
+      "verb": "give",
+      "noun": "v",
+      "count": 1
+    },
+    {
+      "verb": "give",
+      "noun": "mean",
+      "count": 1
+    },
+    {
+      "verb": "have",
+      "noun": "box",
+      "count": 190
+    },
+    {
+      "verb": "have",
+      "noun": "shelf",
+      "count": 92
+    },
+    {
+      "verb": "have",
+      "noun": "sale",
+      "count": 87
+    },
+    {
+      "verb": "have",
+      "noun": "length",
+      "count": 60
+    },
+    {
+      "verb": "hold",
+      "noun": "gallon",
+      "count": 101
+    },
+    {
+      "verb": "hold",
+      "noun": "liter",
+      "count": 76
+    },
+    {
+      "verb": "hold",
+      "noun": "centimeter",
+      "count": 3
+    },
+    {
+      "verb": "hold",
+      "noun": "maximum",
+      "count": 2
+    },
+    {
+      "verb": "make",
+      "noun": "batch",
+      "count": 13
+    },
+    {
+      "verb": "make",
+      "noun": "garden",
+      "count": 6
+    },
+    {
+      "verb": "make",
+      "noun": "type",
+      "count": 4
+    },
+    {
+      "verb": "make",
+      "noun": "cookie",
+      "count": 4
+    },
+    {
+      "verb": "offer",
+      "noun": "discount",
+      "count": 14
+    },
+    {
+      "verb": "offer",
+      "noun": "promotion",
+      "count": 4
+    },
+    {
+      "verb": "offer",
+      "noun": "type",
+      "count": 4
+    },
+    {
+      "verb": "offer",
+      "noun": "deal",
+      "count": 3
+    },
+    {
+      "verb": "paint",
+      "noun": "room",
+      "count": 7
+    },
+    {
+      "verb": "paint",
+      "noun": "wall",
+      "count": 7
+    },
+    {
+      "verb": "paint",
+      "noun": "garden",
+      "count": 2
+    },
+    {
+      "verb": "paint",
+      "noun": "color",
+      "count": 1
+    },
+    {
+      "verb": "plan",
+      "noun": "trip",
+      "count": 164
+    },
+    {
+      "verb": "plan",
+      "noun": "event",
+      "count": 8
+    },
+    {
+      "verb": "plan",
+      "noun": "project",
+      "count": 7
+    },
+    {
+      "verb": "plan",
+      "noun": "day",
+      "count": 7
+    },
+    {
+      "verb": "produce",
+      "noun": "type",
+      "count": 30
+    },
+    {
+      "verb": "produce",
+      "noun": "box",
+      "count": 21
+    },
+    {
+      "verb": "produce",
+      "noun": "product",
+      "count": 10
+    },
+    {
+      "verb": "produce",
+      "noun": "widget",
+      "count": 6
+    },
+    {
+      "verb": "represent",
+      "noun": "number",
+      "count": 5
+    },
+    {
+      "verb": "represent",
+      "noun": "quantity",
+      "count": 5
+    },
+    {
+      "verb": "represent",
+      "noun": "value",
+      "count": 5
+    },
+    {
+      "verb": "represent",
+      "noun": "curve",
+      "count": 3
+    },
+    {
+      "verb": "save",
+      "noun": "money",
+      "count": 356
+    },
+    {
+      "verb": "score",
+      "noun": "point",
+      "count": 16
+    },
+    {
+      "verb": "score",
+      "noun": "average",
+      "count": 5
+    },
+    {
+      "verb": "score",
+      "noun": "total",
+      "count": 3
+    },
+    {
+      "verb": "score",
+      "noun": "grade",
+      "count": 1
+    },
+    {
+      "verb": "sell",
+      "noun": "total",
+      "count": 375
+    },
+    {
+      "verb": "sell",
+      "noun": "loaf",
+      "count": 289
+    },
+    {
+      "verb": "sell",
+      "noun": "type",
+      "count": 162
+    },
+    {
+      "verb": "sell",
+      "noun": "cookie",
+      "count": 43
+    },
+    {
+      "verb": "surround",
+      "noun": "garden",
+      "count": 11
+    },
+    {
+      "verb": "surround",
+      "noun": "area",
+      "count": 10
+    },
+    {
+      "verb": "surround",
+      "noun": "flowerbed",
+      "count": 3
+    },
+    {
+      "verb": "surround",
+      "noun": "lawn",
+      "count": 3
+    },
+    {
+      "verb": "take",
+      "noun": "hour",
+      "count": 15
+    },
+    {
+      "verb": "take",
+      "noun": "minute",
+      "count": 6
+    },
+    {
+      "verb": "take",
+      "noun": "worker",
+      "count": 2
+    },
+    {
+      "verb": "take",
+      "noun": "exam",
+      "count": 2
+    }
+  ]
+}
