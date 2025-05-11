@@ -123,26 +123,48 @@ def generate_sunburst(df, output_dir, export_pdf=True):
     # 过滤出计数大于某个阈值的行
     df_filtered = df[df["count"] > 10]
     
-    # 创建旭日图
-    fig = px.sunburst(df_filtered, path=['verb', 'noun'], values='count')
-    fig.update_layout(
+    # 创建旭日图 - HTML版本
+    fig_html = px.sunburst(df_filtered, path=['verb', 'noun'], values='count')
+    fig_html.update_layout(
         margin=dict(l=0, r=0, t=0, b=0),
         font_family="Arial Unicode MS",  # 支持中文的字体
+        font_size=36,  # 增大字体大小(默认值通常是12)
+    )
+    
+    # 更新HTML图表文本样式
+    fig_html.update_traces(
+        textfont=dict(size=30),  # 数据标签字体大小
+        insidetextfont=dict(size=36)  # 内部文本字体大小
     )
     
     # 保存HTML格式
     output_html = os.path.join(output_dir, "verb_noun_sunburst.html")
-    fig.write_html(output_html)
+    fig_html.write_html(output_html)
     print(f"旭日图已保存至: {output_html}")
     
-    # 如果需要，保存PDF矢量图
+    # 如果需要，创建并保存PDF矢量图(使用更大的字体)
     if export_pdf:
+        # 为PDF创建单独的图表实例，使用更大的字体
+        fig_pdf = px.sunburst(df_filtered, path=['verb', 'noun'], values='count')
+        fig_pdf.update_layout(
+            margin=dict(l=0, r=0, t=0, b=0),
+            font_family="Arial Unicode MS",
+            font_size=72,  # PDF版本字体大小更大
+        )
+        
+        # 更新PDF图表文本样式
+        fig_pdf.update_traces(
+            textfont=dict(size=60),  # PDF数据标签字体大小
+            insidetextfont=dict(size=72)  # PDF内部文本字体大小
+        )
+        
         output_pdf = os.path.join(output_dir, "verb_noun_sunburst.pdf")
-        fig.write_image(output_pdf, format="pdf", width=800, height=800, scale=2)
+        # 增大图像尺寸以容纳更大的字体
+        fig_pdf.write_image(output_pdf, format="pdf", width=1600, height=1600, scale=3)
         print(f"PDF矢量图已保存至: {output_pdf}")
     
-    # 显示图表
-    fig.show()
+    # 显示HTML图表
+    fig_html.show()
 
 # 保存分析结果到文件
 def save_results(phrases_df, df, top_verbs, output_dir):
