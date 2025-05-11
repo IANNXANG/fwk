@@ -120,11 +120,17 @@ def generate_sunburst(df, output_dir, export_pdf=True):
     # 创建输出目录（如果不存在）
     os.makedirs(output_dir, exist_ok=True)
     
-    # 过滤出计数大于某个阈值的行
-    df_filtered = df[df["count"] > 10]
+    # 使用全部数据不进行过滤
+    df_filtered = df
+    
+    # 定义更美观的柔和色彩方案
+    custom_colors = ['#66c2a5', '#fc8d62', '#8da0cb', '#e78ac3', '#a6d854', 
+                     '#ffd92f', '#e5c494', '#b3b3b3', '#7fc97f', '#beaed4',
+                     '#fdc086', '#ffff99', '#80b1d3', '#fab0e4', '#fdae61']
     
     # 创建旭日图 - HTML版本
-    fig_html = px.sunburst(df_filtered, path=['verb', 'noun'], values='count')
+    fig_html = px.sunburst(df_filtered, path=['verb', 'noun'], values='count',
+                           color_discrete_sequence=custom_colors)
     fig_html.update_layout(
         margin=dict(l=0, r=0, t=0, b=0),
         font_family="Arial Unicode MS",  # 支持中文的字体
@@ -145,7 +151,8 @@ def generate_sunburst(df, output_dir, export_pdf=True):
     # 如果需要，创建并保存PDF矢量图(使用更大的字体)
     if export_pdf:
         # 为PDF创建单独的图表实例，使用更大的字体
-        fig_pdf = px.sunburst(df_filtered, path=['verb', 'noun'], values='count')
+        fig_pdf = px.sunburst(df_filtered, path=['verb', 'noun'], values='count',
+                              color_discrete_sequence=custom_colors)
         fig_pdf.update_layout(
             margin=dict(l=0, r=0, t=0, b=0),
             font_family="Arial Unicode MS",
