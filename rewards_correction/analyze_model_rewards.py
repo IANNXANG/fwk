@@ -90,8 +90,8 @@ def main():
     
     # Input and output paths with correct file paths
     input_files = {
-        'LLaMA-32B': 'rewards_correction/llama_32_3b_processed_rewards.jsonl',
-        'Qwen-25B': 'rewards_correction/qwen25_7b_processed_rewards.jsonl'
+        'LLaMA-3.2-3B': 'rewards_correction/llama_32_3b_processed_rewards.jsonl',
+        'Qwen-2.5-7B': 'rewards_correction/qwen25_7b_processed_rewards.jsonl'
     }
     
     # Process each model's data
