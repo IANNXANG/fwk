@@ -14,10 +14,14 @@
   - `token_analyzer.py` - 分析令牌长度分布并生成统计报告
 
 ### 2. 数据质量评估
-- **任务描述:** 使用大模型对抽样问题进行质量评分
-- **交付文件:** `evaluation_results/math_evaluation_summary.txt` 和 `.csv`
+- **任务描述:** 使用大模型对抽样问题进行质量评分和分析
+- **交付文件:** 
+  - `evaluation_results/math_evaluation_summary.txt` 和 `.csv` - 原始评分结果
+  - `evaluation_results/evaluation_analysis_report.txt` - 详细的评分分析报告
+  - `evaluation_results/evaluation_analysis_report.csv` - 评分分析数据表格
 - **相关代码:** 
   - `math_problem_evaluator.py` - 使用大模型对数学问题质量进行评分
+  - `analyze_evaluation_results.py` - 分析评分结果，包括标准差和跨数据集分析
 
 ### 3. 模型响应长度分析
 - **任务描述:** 分析大模型对问题的响应长度特征
@@ -47,8 +51,11 @@
 
 ### 7. 响应长度分布对比
 - **任务描述:** 对比不同数据集的响应长度分布
-- **交付文件:** `math7507gen_response_length_distribution.pdf` 和 `math3977gen_response_length_distribution.pdf`
+- **交付文件:** 
+  - `response_length_analysis_full/response_length_comparison.pdf` - 五个数据集的响应长度均值对比
+  - `math7507gen_response_length_distribution.pdf` 和 `math3977gen_response_length_distribution.pdf`
 - **相关代码:** 
+  - `compare_response_lengths.py` - 生成五个数据集响应长度对比柱状图
   - `response_length_pdf_visualize.py` - 以3:1比例生成响应长度分布PDF
 
 ## 项目内容

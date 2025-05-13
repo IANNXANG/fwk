@@ -1,0 +1,21 @@
+Dataset,Dimension,Mean,Median,Std Dev,Min,Max,Count
+3.math500seed,task_validity,3.24,3.00,1.63,0.00,5.00,500
+3.math500seed,solution_correctness,2.96,3.00,1.72,0.00,5.00,500
+3.math500seed,overall_quality,3.72,4.00,1.56,0.00,5.00,500
+3.math500seed,problem_appropriateness,3.26,3.00,1.51,0.00,5.00,500
+1.math7500,solution_correctness,2.98,3.00,1.68,0.00,5.00,500
+1.math7500,problem_appropriateness,3.29,3.00,1.49,0.00,5.00,500
+1.math7500,task_validity,3.30,4.00,1.55,0.00,5.00,500
+1.math7500,overall_quality,3.76,4.00,1.54,0.00,5.00,500
+6.iter0,solution_correctness,3.13,3.00,1.78,0.00,5.00,500
+6.iter0,problem_appropriateness,2.99,3.00,1.47,0.00,5.00,500
+6.iter0,task_validity,3.15,3.00,1.62,0.00,5.00,500
+6.iter0,overall_quality,3.58,4.00,1.45,0.00,5.00,500
+7.iter1,task_validity,3.44,4.00,1.63,0.00,5.00,500
+7.iter1,solution_correctness,3.37,4.00,1.81,0.00,5.00,500
+7.iter1,problem_appropriateness,2.99,3.00,1.48,0.00,5.00,500
+7.iter1,overall_quality,3.46,4.00,1.56,0.00,5.00,500
+8.iter2,solution_correctness,3.29,4.00,1.76,0.00,5.00,500
+8.iter2,task_validity,3.50,4.00,1.55,0.00,5.00,500
+8.iter2,problem_appropriateness,3.03,3.00,1.44,0.00,5.00,500
+8.iter2,overall_quality,3.47,4.00,1.53,0.00,5.00,500
