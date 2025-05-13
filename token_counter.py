@@ -83,7 +83,8 @@ def process_dataset(file_path, output_dir, sample_size=None, x_max=None, bin_siz
             'min': float(np.min(token_counts)),
             'max': float(np.max(token_counts)),
             'total': int(np.sum(token_counts)),
-            'count': len(token_counts)
+            'count': len(token_counts),
+            'std': float(np.std(token_counts))
         }
         
         print(f"数据集 {dataset_name} 处理完成")
@@ -91,6 +92,7 @@ def process_dataset(file_path, output_dir, sample_size=None, x_max=None, bin_siz
         print(f"  样本数: {stats['count']}")
         print(f"  平均token数: {stats['mean']:.2f}")
         print(f"  中位数token数: {stats['median']:.2f}")
+        print(f"  标准差: {stats['std']:.2f}")
         print(f"  最小token数: {stats['min']}")
         print(f"  最大token数: {stats['max']}")
         print(f"  总token数: {stats['total']}")
@@ -141,6 +143,7 @@ def save_summary(results, output_dir):
                 f.write(f"  样本数: {stats['count']}\n")
                 f.write(f"  平均token数: {stats['mean']:.2f}\n")
                 f.write(f"  中位数token数: {stats['median']:.2f}\n")
+                f.write(f"  标准差: {stats['std']:.2f}\n")
                 f.write(f"  最小token数: {stats['min']}\n")
                 f.write(f"  最大token数: {stats['max']}\n")
                 f.write(f"  总token数: {stats['total']}\n\n")
