@@ -72,7 +72,6 @@ def plot_similarities(idx_list, rule_self_sim, rule_maj_sim, model_name, output_
     plt.axhline(y=avg_rule_maj, color='green', linestyle='--', alpha=0.8, 
                label=f'Rule-Majority Avg: {avg_rule_maj:.4f}')
     
-    plt.title(f'Cosine Similarities Distribution ({model_name})')
     plt.xlabel('Sample Index')
     plt.ylabel('Cosine Similarity')
     plt.legend()
