@@ -111,11 +111,11 @@ def plot_umap_results(umap_results, labels, title, output_file):
     sns.scatterplot(data=df, x='x', y='y', hue='category', palette='tab10', s=80, alpha=0.7)
     
     # plt.title(title, fontsize=16)
-    plt.xlabel('Dimension 1', fontsize=36)
-    plt.ylabel('Dimension 2', fontsize=36)
-    plt.xticks(fontsize=27)
-    plt.yticks(fontsize=27)
-    plt.legend(fontsize=30)
+    plt.xlabel('Dimension 1', fontsize=40)
+    plt.ylabel('Dimension 2', fontsize=40)
+    plt.xticks(fontsize=31)
+    plt.yticks(fontsize=31)
+    plt.legend(fontsize=34, loc='lower right')
     plt.tight_layout()
     
     # Save image as PDF
