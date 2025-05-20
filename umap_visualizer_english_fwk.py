@@ -16,6 +16,8 @@ from transformers import BertTokenizer, BertModel
 import torch
 from tqdm import tqdm
 import umap
+from rank_bm25 import BM25Okapi
+from sklearn.preprocessing import normalize
 
 # Create output directory
 output_dir = "umap_visualizations"
@@ -49,23 +51,52 @@ def load_data_from_jsonl(file_path, sample_size=float('inf')):
 
 def extract_features_tfidf(problems):
     """Extract features using TF-IDF"""
-    # Segment Chinese text
-    segmented_problems = []
-    for problem in problems:
-        words = jieba.cut(problem)
-        segmented_problems.append(" ".join(words))
-    
+    # For English text, we don't need jieba segmentation
     # Use TF-IDF to extract features
     vectorizer = TfidfVectorizer(max_features=1000)
-    features = vectorizer.fit_transform(segmented_problems)
+    features = vectorizer.fit_transform(problems)
     return features.toarray()
+
+def extract_features_bm25(problems):
+    """Extract features using BM25"""
+    # Tokenize documents
+    tokenized_problems = [problem.split() for problem in problems]
+    
+    # Create BM25 object
+    bm25 = BM25Okapi(tokenized_problems)
+    
+    # Calculate BM25 scores for each document against all others
+    features = []
+    for i, problem in enumerate(tqdm(tokenized_problems, desc="Extracting BM25 features")):
+        # Use unique terms from the problem as queries
+        unique_terms = list(set(problem))
+        
+        if not unique_terms:  # Handle empty problems
+            features.append(np.zeros(len(tokenized_problems)))
+            continue
+            
+        # Get scores for all documents against this problem's terms
+        doc_scores = []
+        for term in unique_terms:
+            scores = bm25.get_scores([term])
+            doc_scores.append(scores)
+        
+        # Average the scores for each term
+        avg_scores = np.mean(doc_scores, axis=0)
+        features.append(avg_scores)
+    
+    # Convert to numpy array and normalize
+    features_array = np.array(features)
+    normalized_features = normalize(features_array)
+    
+    return normalized_features
 
 def extract_features_bert(problems, device='cpu'):
     """Extract features using BERT"""
     try:
         # Load pre-trained BERT model
-        tokenizer = BertTokenizer.from_pretrained('bert-base-chinese')
-        model = BertModel.from_pretrained('bert-base-chinese')
+        tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+        model = BertModel.from_pretrained('bert-base-uncased')
         model.to(device)
         model.eval()
         
@@ -177,8 +208,8 @@ def analyze_top_words(all_problems, labels, output_file, top_n=20):
     for label in unique_labels:
         # Combine all problems in this category
         combined_text = " ".join(category_problems[label])
-        # Use jieba for word segmentation
-        words = jieba.cut(combined_text)
+        # For English text, split by whitespace
+        words = combined_text.lower().split()
         # Filter out stop words and punctuation
         filtered_words = [word for word in words if len(word) > 1 and not bool(re.match(r'[^\w\s]', word))]
         # Count word frequencies
@@ -217,9 +248,9 @@ def main():
     
     # JSONL file paths with custom labels
     jsonl_files = [
-        ("problemdata/1.math7500.jsonl", "MATH train set"),
-        ("problemdata/3.math500seed.jsonl", "SeedData"),
-        ("problemdata/6.iter0.jsonl", "GenData0"),
+        ("problemdata/1.math7500.jsonl", "MATH train"),
+        ("problemdata/3.math500seed.jsonl", r"$D_{\text{seed}}$"),
+        ("problemdata/6.iter0.jsonl", r"$D_{\text{gen\_iter1}}$"),
     ]
     
     # Load all data from each file
@@ -259,7 +290,22 @@ def main():
         os.path.join(output_dir, "tfidf_umap_visualization.pdf")
     )
     
-    # 2. BERT features for UMAP analysis (if available)
+    # 2. BM25 features for UMAP analysis
+    print("Extracting BM25 features...")
+    bm25_features = extract_features_bm25(all_problems)
+    
+    print("Applying UMAP to BM25 features...")
+    umap_results_bm25 = apply_umap(bm25_features, n_neighbors=20, min_dist=0.2)
+    
+    print("Plotting UMAP visualization of BM25 features...")
+    plot_umap_results(
+        umap_results_bm25, 
+        labels, 
+        "UMAP Visualization of Problem Texts (BM25)", 
+        os.path.join(output_dir, "bm25_umap_visualization.pdf")
+    )
+    
+    # 3. BERT features for UMAP analysis (if available)
     bert_features = extract_features_bert(all_problems)
     if bert_features is not None:
         print("Applying UMAP to BERT features...")
@@ -274,7 +320,7 @@ def main():
             os.path.join(output_dir, "bert_umap_visualization.pdf")
         )
     
-    # 3. Analyze problem lengths
+    # 4. Analyze problem lengths
     print("Analyzing problem length distributions...")
     avg_lengths = analyze_problem_lengths(
         all_problems, 
@@ -285,7 +331,7 @@ def main():
     for category, avg_length in avg_lengths.items():
         print(f"  {category}: {avg_length:.2f} characters")
     
-    # 4. Analyze frequent words
+    # 5. Analyze frequent words
     print("Analyzing frequent words in problems...")
     category_top_words = analyze_top_words(
         all_problems, 
