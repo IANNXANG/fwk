@@ -19,6 +19,7 @@ import umap
 from rank_bm25 import BM25Okapi
 from sklearn.preprocessing import normalize
 
+plt.rc('font',family='times new roman')
 # Create output directory
 output_dir = "umap_visualizations"
 os.makedirs(output_dir, exist_ok=True)
@@ -127,26 +128,35 @@ def apply_umap(features, n_neighbors=15, min_dist=0.1, n_components=2):
     )
     return reducer.fit_transform(features)
 
-def plot_umap_results(umap_results, labels, title, output_file):
+def plot_umap_results(umap_results, labels, colors, title, output_file):
     """Plot UMAP results and save visualization as PDF"""
     plt.figure(figsize=(12, 10))
-    
+    plt.rc('font',family='times new roman')
     # Convert results to DataFrame for seaborn plotting
     df = pd.DataFrame({
         'x': umap_results[:, 0],
         'y': umap_results[:, 1],
-        'category': labels
+        'category': labels,
+        'color': colors
     })
     
     # Create scatter plot with seaborn
-    sns.scatterplot(data=df, x='x', y='y', hue='category', palette='tab10', s=80, alpha=0.7)
+    sns.scatterplot(data=df, x='x', y='y', hue='category', palette='tab10', s=120, alpha=0.7)
     
     # plt.title(title, fontsize=16)
     plt.xlabel('Dimension 1', fontsize=40)
     plt.ylabel('Dimension 2', fontsize=40)
     plt.xticks(fontsize=31)
     plt.yticks(fontsize=31)
-    plt.legend(fontsize=34, loc='lower right')
+    from matplotlib.lines import Line2D
+    legend_elements = [
+        Line2D([0], [0], marker='o', color='w', label=r'MATH train', markerfacecolor='#009b9e', markersize=20),
+        Line2D([0], [0], marker='o', color='w', label=r'$\mathcal{D}_{\text{seed}}$', markerfacecolor='#f8ad64', markersize=20),
+        Line2D([0], [0], marker='o', color='w', label=r'$\mathcal{D}_{\text{gen}}^1$', markerfacecolor='#4472c4', markersize=20),
+        # Line2D([0], [0], marker='o', color='w', label=r'$D_{\text{seed}}$', markerfacecolor='#f8ad64', markersize=20),
+        # Line2D([0], [0], marker='o', color='w', label=r'$D_{\text{gen}}^1$', markerfacecolor='#4472c4', markersize=20),
+    ]
+    plt.legend(handles=legend_elements, fontsize=34, loc='upper left', frameon=True, handlelength=1.5)
     plt.tight_layout()
     
     # Save image as PDF
@@ -248,16 +258,17 @@ def main():
     
     # JSONL file paths with custom labels
     jsonl_files = [
-        ("problemdata/1.math7500.jsonl", "MATH train"),
-        ("problemdata/3.math500seed.jsonl", r"$D_{\text{seed}}$"),
-        ("problemdata/6.iter0.jsonl", r"$D_{\text{gen\_iter1}}$"),
+        ("problemdata/1.math7500.jsonl", "MATH train", "#009b9e"),
+        ("problemdata/3.math500seed.jsonl", r"$D_{\text{seed}}$", "#f8ad64"),
+        ("problemdata/6.iter0.jsonl", r"$D^1_{\text{gen}}$", "#4472c4"),
     ]
     
     # Load all data from each file
     all_problems = []
     labels = []
+    colors = []
     
-    for file_path, label in jsonl_files:
+    for file_path, label, color in jsonl_files:
         print(f"Loading file: {file_path}")
         try:
             # Load all data without sample size limit
@@ -265,6 +276,7 @@ def main():
             all_problems.extend(problems)
             # Use the custom label for each file
             labels.extend([label for _ in range(len(problems))])
+            colors.extend([color for _ in range(len(problems))])
             print(f"  Successfully loaded {len(problems)} records")
         except Exception as e:
             print(f"  Loading failed: {e}")
@@ -276,34 +288,34 @@ def main():
     print(f"Loaded a total of {len(all_problems)} problem records")
     
     # 1. TF-IDF features for UMAP analysis
-    print("Extracting TF-IDF features...")
-    tfidf_features = extract_features_tfidf(all_problems)
+    # print("Extracting TF-IDF features...")
+    # tfidf_features = extract_features_tfidf(all_problems)
     
-    print("Applying UMAP dimensionality reduction...")
-    umap_results_tfidf = apply_umap(tfidf_features)
+    # print("Applying UMAP dimensionality reduction...")
+    # umap_results_tfidf = apply_umap(tfidf_features)
     
-    print("Plotting UMAP visualization of TF-IDF features...")
-    plot_umap_results(
-        umap_results_tfidf, 
-        labels, 
-        "UMAP Visualization of Problem Texts (TF-IDF)", 
-        os.path.join(output_dir, "tfidf_umap_visualization.pdf")
-    )
+    # print("Plotting UMAP visualization of TF-IDF features...")
+    # plot_umap_results(
+    #     umap_results_tfidf, 
+    #     labels, 
+    #     "UMAP Visualization of Problem Texts (TF-IDF)", 
+    #     os.path.join(output_dir, "tfidf_umap_visualization.pdf")
+    # )
     
     # 2. BM25 features for UMAP analysis
-    print("Extracting BM25 features...")
-    bm25_features = extract_features_bm25(all_problems)
+    # print("Extracting BM25 features...")
+    # bm25_features = extract_features_bm25(all_problems)
     
-    print("Applying UMAP to BM25 features...")
-    umap_results_bm25 = apply_umap(bm25_features, n_neighbors=20, min_dist=0.2)
+    # print("Applying UMAP to BM25 features...")
+    # umap_results_bm25 = apply_umap(bm25_features, n_neighbors=20, min_dist=0.2)
     
-    print("Plotting UMAP visualization of BM25 features...")
-    plot_umap_results(
-        umap_results_bm25, 
-        labels, 
-        "UMAP Visualization of Problem Texts (BM25)", 
-        os.path.join(output_dir, "bm25_umap_visualization.pdf")
-    )
+    # print("Plotting UMAP visualization of BM25 features...")
+    # plot_umap_results(
+    #     umap_results_bm25, 
+    #     labels, 
+    #     "UMAP Visualization of Problem Texts (BM25)", 
+    #     os.path.join(output_dir, "bm25_umap_visualization.pdf")
+    # )
     
     # 3. BERT features for UMAP analysis (if available)
     bert_features = extract_features_bert(all_problems)
@@ -316,28 +328,29 @@ def main():
         plot_umap_results(
             umap_results_bert, 
             labels, 
+            colors,
             "UMAP Visualization of Problem Texts (BERT)", 
             os.path.join(output_dir, "bert_umap_visualization.pdf")
         )
     
     # 4. Analyze problem lengths
-    print("Analyzing problem length distributions...")
-    avg_lengths = analyze_problem_lengths(
-        all_problems, 
-        labels, 
-        os.path.join(output_dir, "problem_length_analysis.pdf")
-    )
-    print("Average problem length by category:")
-    for category, avg_length in avg_lengths.items():
-        print(f"  {category}: {avg_length:.2f} characters")
+    # print("Analyzing problem length distributions...")
+    # avg_lengths = analyze_problem_lengths(
+    #     all_problems, 
+    #     labels, 
+    #     os.path.join(output_dir, "problem_length_analysis.pdf")
+    # )
+    # print("Average problem length by category:")
+    # for category, avg_length in avg_lengths.items():
+    #     print(f"  {category}: {avg_length:.2f} characters")
     
     # 5. Analyze frequent words
-    print("Analyzing frequent words in problems...")
-    category_top_words = analyze_top_words(
-        all_problems, 
-        labels, 
-        os.path.join(output_dir, "top_words_analysis.pdf")
-    )
+    # print("Analyzing frequent words in problems...")
+    # category_top_words = analyze_top_words(
+    #     all_problems, 
+    #     labels, 
+    #     os.path.join(output_dir, "top_words_analysis.pdf")
+    # )
     
     print("All analyses complete, visualization results saved in 'umap_visualizations' directory")
 
